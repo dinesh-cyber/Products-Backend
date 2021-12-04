@@ -103,8 +103,8 @@ class ProductsUpdateAPI(APIView):
                     serializer.save()
                     return Response(serializer.data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(
+        else:
+            return Response(
                 {"message": "You don't have permission to this api"},
                 status=status.HTTP_400_BAD_REQUEST
             )
