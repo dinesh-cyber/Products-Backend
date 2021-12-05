@@ -96,20 +96,32 @@ class ProductsUpdateAPI(APIView):
                     {"message": "Invalid product Id"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            if product.created_by == request.user:
-                data = request.data
-                serializer = ProductsSerializer(instance=product, data=data, partial=True)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(
-                {"message": "You don't have permission to this api"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+            data = request.data
+            serializer = ProductsSerializer(instance=product, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": "You don't have permission to this api"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
-        
-
-
+    def delete(self, request, product_id):
+        if request.user.user_type != "staff":
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                return Response(
+                    {"message": "Invalid product Id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # make product active false when admin or manager deletes products
+            product.is_active = False
+            product.save()
+            serializer = ProductsSerializer(product)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "You don't have permission to this api"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
